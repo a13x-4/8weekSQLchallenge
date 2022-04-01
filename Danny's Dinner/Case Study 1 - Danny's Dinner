@@ -3,8 +3,8 @@
 SELECT
   sales.customer_id,
   SUM(menu.price) AS total_sales
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
 GROUP BY
   sales.customer_id
@@ -15,7 +15,7 @@ ORDER BY customer_id;
 SELECT
   customer_id,
   COUNT(DISTINCT order_date)
-FROM dannys_diner.sales
+FROM dannys_dinner.sales
 GROUP BY customer_id;
 
 3. What was the first item(s) from the menu purchased by each customer?
@@ -28,8 +28,8 @@ WITH ordered_sales AS (
       ORDER BY sales.order_date
     ) AS order_rank,
     menu.product_name
-  FROM dannys_diner.sales
-  INNER JOIN dannys_diner.menu
+  FROM dannys_dinner.sales
+  INNER JOIN dannys_dinner.menu
     ON sales.product_id = menu.product_id
 )
 SELECT DISTINCT
@@ -43,8 +43,8 @@ WHERE order_rank = 1;
 SELECT
   menu.product_name,
   COUNT(sales.*) AS total_purchases
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
 GROUP BY product_name
 ORDER BY total_purchases DESC
@@ -61,8 +61,8 @@ WITH customer_cte AS (
       PARTITION BY sales.customer_id
       ORDER BY COUNT(sales.*) DESC
     ) AS item_rank
-  FROM dannys_diner.sales
-  INNER JOIN dannys_diner.menu
+  FROM dannys_dinner.sales
+  INNER JOIN dannys_dinner.menu
     ON sales.product_id = menu.product_id
   GROUP BY
     sales.customer_id,
@@ -86,10 +86,10 @@ WITH member_sales_cte AS (
       PARTITION BY sales.customer_id
       ORDER BY sales.order_date
     ) AS order_rank
-  FROM dannys_diner.sales
-  INNER JOIN dannys_diner.menu
+  FROM dannys_dinner.sales
+  INNER JOIN dannys_dinner.menu
     ON sales.product_id = menu.product_id
-  INNER JOIN dannys_diner.members
+  INNER JOIN dannys_dinner.members
     ON sales.customer_id = members.customer_id
   WHERE
     sales.order_date >= members.join_date::DATE
@@ -112,10 +112,10 @@ WITH member_sales AS (
       PARTITION BY sales.customer_id
       ORDER BY sales.order_date DESC
     ) AS order_rank
-  FROM dannys_diner.menu
-  INNER JOIN dannys_diner.sales
+  FROM dannys_dinner.menu
+  INNER JOIN dannys_dinner.sales
     ON sales.product_id = menu.product_id
-  INNER JOIN dannys_diner.members
+  INNER JOIN dannys_dinner.members
     ON sales.customer_id = members.customer_id
   WHERE
     sales.order_date < members.join_date::DATE
@@ -134,10 +134,10 @@ SELECT
   sales.customer_id,
   COUNT(DISTINCT sales.product_id) AS unique_menu_items,
   SUM(menu.price) AS total_spend
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
-INNER JOIN dannys_diner.members
+INNER JOIN dannys_dinner.members
   ON sales.customer_id = members.customer_id
 WHERE
   sales.order_date < members.join_date::DATE
@@ -153,8 +153,8 @@ SELECT
       ELSE 10 * menu.price
     END
   ) AS points
-FROM dannys_diner.sales
-LEFT JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+LEFT JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
 GROUP BY sales.customer_id
 ORDER BY points DESC;
@@ -172,10 +172,10 @@ SELECT
       ELSE 10 * menu.price
       END
   ) AS points
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
-INNER JOIN dannys_diner.members
+INNER JOIN dannys_dinner.members
   ON sales.customer_id = members.customer_id
 WHERE sales.order_date <= '2021-01-31'::DATE
 GROUP BY sales.customer_id
@@ -191,10 +191,10 @@ WITH member_sales AS (
       PARTITION BY sales.customer_id
       ORDER BY sales.order_date DESC
     ) AS order_rank
-  FROM dannys_diner.menu
-  INNER JOIN dannys_diner.sales
+  FROM dannys_dinner.menu
+  INNER JOIN dannys_dinner.sales
     ON sales.product_id = menu.product_id
-  INNER JOIN dannys_diner.members
+  INNER JOIN dannys_dinner.members
     ON sales.customer_id = members.customer_id
   WHERE
     sales.order_date < members.join_date::DATE
@@ -213,10 +213,10 @@ SELECT
   sales.customer_id,
   COUNT(DISTINCT sales.product_id) AS unique_menu_items,
   SUM(menu.price) AS total_spend
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
-INNER JOIN dannys_diner.members
+INNER JOIN dannys_dinner.members
   ON sales.customer_id = members.customer_id
 WHERE
   sales.order_date < members.join_date::DATE
@@ -232,8 +232,8 @@ SELECT
       ELSE 10 * menu.price
     END
   ) AS points
-FROM dannys_diner.sales
-LEFT JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+LEFT JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
 GROUP BY sales.customer_id
 ORDER BY points DESC;
@@ -251,11 +251,11 @@ SELECT
       ELSE 10 * menu.price
       END
   ) AS points
-FROM dannys_diner.sales
-INNER JOIN dannys_diner.menu
+FROM dannys_dinner.sales
+INNER JOIN dannys_dinner.menu
   ON sales.product_id = menu.product_id
-INNER JOIN dannys_diner.members
+INNER JOIN dannys_dinner.members
   ON sales.customer_id = members.customer_id
 WHERE sales.order_date <= '2021-01-31'::DATE
 GROUP BY sales.customer_id
-ORDER BY sales.customer_id;
+ORDER BY sales.customer_id; 
