@@ -1,3 +1,4 @@
+
 1. How many pizzas were ordered?
 
 SELECT COUNT(*) 
@@ -38,3 +39,33 @@ WHERE EXISTS (
 )
 GROUP BY t2.pizza_name
 ORDER BY t2.pizza_name;
+
+5. How many Vegetarian and Meatlovers were ordered by each customer?
+
+SELECT
+  customer_id,
+  SUM(CASE WHEN pizza_id = 1 THEN 1 ELSE 0 END) AS meatlovers,
+  SUM(CASE WHEN pizza_id = 2 THEN 1 ELSE 0 END) AS vegetarian
+FROM pizza_runner.customer_orders
+GROUP BY customer_id
+ORDER BY customer_id;
+
+6. What was the maximum number of pizzas delivered in a single order?
+
+WITH cte_ranked_orders AS (
+  SELECT
+    order_id,
+    COUNT(*) AS pizza_count,
+    RANK() OVER (ORDER BY COUNT(*) DESC) AS count_rank
+  FROM pizza_runner.customer_orders AS t1
+  WHERE EXISTS (
+    SELECT 1 FROM pizza_runner.runner_orders AS t2
+    WHERE t1.order_id = t2.order_id
+    AND (
+      t2.cancellation IS NULL
+      OR t2.cancellation NOT IN ('Restaurant Cancellation', 'Customer Cancellation')
+    )
+  )
+  GROUP BY order_id
+)
+SELECT pizza_count FROM ranked_orders_cte WHERE count_rank = 1;
