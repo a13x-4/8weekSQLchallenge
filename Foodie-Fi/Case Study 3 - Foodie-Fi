@@ -77,3 +77,93 @@ INNER JOIN foodie_fi.plans
 WHERE plan_rank = 1
 GROUP BY plans.plan_id, plans.plan_name
 ORDER BY plans.plan_id;
+
+7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+
+WITH valid_subscriptions AS (
+  SELECT
+    customer_id,
+    plan_id,
+    start_date,
+    ROW_NUMBER() OVER (
+      PARTITION BY customer_id
+      ORDER BY start_date DESC
+    ) AS plan_rank
+  FROM foodie_fi.subscriptions
+  WHERE start_date <= '2020-12-31'
+),
+summarised_plans AS (
+  SELECT
+    plan_id,
+    COUNT(DISTINCT customer_id) AS customers
+  FROM valid_subscriptions
+  GROUP BY plan_id
+)
+SELECT
+  plans.plan_id,
+  plans.plan_name,
+  customers,
+  ROUND(
+    100 * customers /
+      AVG(customers) OVER (),
+    1
+  ) AS percentage
+FROM summarised_plans
+INNER JOIN foodie_fi.plans
+  ON summarised_plans.plan_id = plans.plan_id
+ORDER BY plans.plan_id;
+
+8. How many customers have upgraded to an annual plan in 2020?
+
+SELECT
+  COUNT(DISTINCT customer_id) AS annual_customers
+FROM foodie_fi.subscriptions
+WHERE plan_id = 3
+  AND start_date BETWEEN '2020-12-31' AND '2020-01-01';
+
+9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
+
+WITH annual_plan AS (
+  SELECT
+    customer_id,
+    start_date
+  FROM foodie_fi.subscriptions
+  WHERE plan_id = 3
+),
+trial AS (
+  SELECT
+    customer_id,
+    start_date
+  FROM foodie_fi.subscriptions
+  WHERE plan_id = 0
+)
+SELECT
+  AVG(
+    DATE_PART(
+      'min',
+      annual_plan.start_date::TIMESTAMP -
+        trial.start_date::TIMESTAMP
+    )
+  )
+FROM annual_plan
+CROSS JOIN trial;
+
+10. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
+
+WITH ranked_plans AS (
+SELECT
+  customer_id,
+  plan_id,
+  start_date,
+  LAG(plan_id) OVER (
+      PARTITION BY start_date
+      ORDER BY start_date DESC
+  ) AS lag_plan_id
+FROM foodie_fi.subscriptions
+WHERE DATE_PART('year', start_date) = 2020
+)
+SELECT
+  COUNT(*)
+FROM ranked_plans
+WHERE lag_plan_id = 1 AND plan_id = 2;
+
